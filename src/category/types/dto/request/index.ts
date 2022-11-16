@@ -1,3 +1,3 @@
-export * from "./create-category.dto";
-export * from "./update-category.dto";
-export * from "./category-filters.dto";
+export * from "./create-category.request.dto";
+export * from "./update-category.request.dto";
+export * from "./category-filters.request.dto";
