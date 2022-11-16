@@ -1,0 +1,15 @@
+version: "3.3"
+services:
+  db:
+    image: postgres:15.0-alpine
+    restart: always
+    container_name: database
+    environment:
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./docker/data/database:/var/lib/postgresql/data
+    ports:
+      - ${DATABASE_PORT}:5432
