@@ -2,7 +2,7 @@ import { DeepPartial, Repository } from "typeorm";
 import { CreateStrategy } from "../../../core/data-access";
 import { BaseEntity } from "../../types";
 
-export class TypeormDefaultCreateStrategy<T extends BaseEntity>
+export class TypeormDefaultCreateStrategy<T extends BaseEntity<any>>
   implements CreateStrategy<T>
 {
   constructor(private readonly _repository: Repository<T>) {}
