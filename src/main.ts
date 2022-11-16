@@ -23,7 +23,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle(applicationConfig.name)
-    .setDescription(`${applicationConfig.name} API description`)
+    .setDescription(`${applicationConfig.description}`)
     .setVersion(applicationConfig.version)
     .build();
   const document = SwaggerModule.createDocument(app, config);
