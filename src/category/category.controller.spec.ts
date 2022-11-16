@@ -1,5 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { TypeormModule } from "../typeorm";
+import { CategoryController } from "./category.controller";
 import { CategoryService } from "./category.service";
 import {
   CategoryFiltersDTOValidation,
@@ -7,24 +8,25 @@ import {
   UpdateCategoryDTOValidation
 } from "./validations";
 
-describe("CategoryService", () => {
-  let service: CategoryService;
+describe("CategoryController", () => {
+  let controller: CategoryController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [TypeormModule],
+      controllers: [CategoryController],
       providers: [
         CategoryService,
         CategoryFiltersDTOValidation,
         CreateCategoryDTOValidation,
         UpdateCategoryDTOValidation
-      ],
-      imports: [TypeormModule]
+      ]
     }).compile();
 
-    service = module.get<CategoryService>(CategoryService);
+    controller = module.get<CategoryController>(CategoryController);
   });
 
   it("should be defined", () => {
-    expect(service).toBeDefined();
+    expect(controller).toBeDefined();
   });
 });
