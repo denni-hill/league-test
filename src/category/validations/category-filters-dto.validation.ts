@@ -3,7 +3,7 @@ import { nameof } from "../../core/helpers";
 import { Validation, ValidationResult } from "../../core/validation";
 import {
   CategoryFilters,
-  CategoryFiltersDTO,
+  CategoryFiltersRequestDTO,
   Category,
   Sort,
   SortDirection
@@ -15,11 +15,24 @@ export class CategoryFiltersDTOValidation
   private _validationSchema: Joi.ObjectSchema<CategoryFilters>;
   private _acceptableSortValues: string[];
 
-  validate(input: CategoryFiltersDTO): ValidationResult<CategoryFilters> {
-    return this._validationSchema.validate(input, {
+  validate(
+    input: CategoryFiltersRequestDTO
+  ): ValidationResult<CategoryFilters> {
+    const validationResult = this._validationSchema.validate(input, {
       stripUnknown: true,
       abortEarly: false
     });
+
+    if (
+      validationResult.error === undefined &&
+      validationResult.value.sort !== undefined &&
+      !this._acceptableSortValues.includes(
+        validationResult.value.sort.fieldName
+      )
+    )
+      validationResult.value.sort = undefined;
+
+    return validationResult;
   }
 
   constructor() {
@@ -28,7 +41,7 @@ export class CategoryFiltersDTOValidation
   }
 
   private _initAcceptableSortValues(): void {
-    let acceptableSortValues: string[] = [
+    this._acceptableSortValues = [
       nameof((c: Category) => c.id),
       nameof((c: Category) => c.slug),
       nameof((c: Category) => c.name),
@@ -36,22 +49,16 @@ export class CategoryFiltersDTOValidation
       nameof((c: Category) => c.createdDate),
       nameof((c: Category) => c.active)
     ];
-
-    acceptableSortValues = acceptableSortValues.concat(
-      acceptableSortValues.map((fieldName) => `-${fieldName}`)
-    );
-
-    this._acceptableSortValues = acceptableSortValues;
   }
 
   private _initValidationSchema() {
     this._validationSchema = Joi.object<
       CategoryFilters,
       true,
-      CategoryFiltersDTO
+      CategoryFiltersRequestDTO
     >({
       name: Joi.string().trim().min(1).optional(),
-      description: Joi.string().trim().default(null).optional(),
+      description: Joi.string().trim().min(1).optional(),
       active: Joi.string()
         .valid("0", "false", "1", "true")
         .custom((active: string) => {
@@ -67,10 +74,10 @@ export class CategoryFiltersDTOValidation
         .default(1)
         .custom((page) => {
           if (page === 0) return 1;
+          else return page;
         }),
       sort: Joi.string()
         .trim()
-        .valid(...this._acceptableSortValues)
         .custom((sortValue: string): Sort => {
           if (sortValue.startsWith("-"))
             return {
