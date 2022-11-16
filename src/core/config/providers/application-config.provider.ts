@@ -37,6 +37,14 @@ export class ApplicationConfigProvider
     return this._configService.get<string>(this._nameVariable) || "unknown";
   }
 
+  private readonly _descriptionVariable = "APPLICATION_DESCRIPTION";
+  get description(): string {
+    return (
+      this._configService.get<string>(this._descriptionVariable) ||
+      `${this.name} API description`
+    );
+  }
+
   private readonly _versionVariable = "VERSION";
   get version() {
     return this._configService.get<string>(this._versionVariable) || "1.0";
@@ -51,6 +59,7 @@ export class ApplicationConfigProvider
       port: Joi.number().port().required().label(this._portVariable),
       ip: Joi.string().ip().required().label(this._ipVariable),
       name: Joi.string().required().label(this._nameVariable),
+      description: Joi.string().required().label(this._descriptionVariable),
       version: Joi.string().required().label(this._versionVariable)
     }).validate(
       {
@@ -58,6 +67,7 @@ export class ApplicationConfigProvider
         port: this.port,
         ip: this.ip,
         name: this.name,
+        description: this.description,
         version: this.version
       },
       { stripUnknown: true, abortEarly: false }
