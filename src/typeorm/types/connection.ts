@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
 
-export interface Connection {
-  get dataSource(): DataSource;
+export abstract class Connection {
+  abstract get dataSource(): DataSource;
 }
