@@ -25,25 +25,25 @@ describe("Unit test for nameof function", () => {
   });
 
   it("variable name with fieldNameOnly set to true", () => {
-    expect(nameof(() => obj, { fieldNameOnly: true })).toBe("obj");
+    expect(nameof(() => obj, { propertyNameOnly: true })).toBe("obj");
   });
 
   it("object property name with fieldNameOnly set to true", () => {
-    expect(nameof(() => obj.property, { fieldNameOnly: true })).toBe(
+    expect(nameof(() => obj.property, { propertyNameOnly: true })).toBe(
       "property"
     );
   });
 
   it("object property name with fieldNameOnly set to true", () => {
     expect(
-      nameof(() => obj.property.nestedProperty, { fieldNameOnly: true })
+      nameof(() => obj.property.nestedProperty, { propertyNameOnly: true })
     ).toBe("nestedProperty");
   });
 
   it("class property with type-safe params", () => {
     expect(
       nameof((objectOfA: A) => objectOfA.property.nestedProperty, {
-        fieldNameOnly: true
+        propertyNameOnly: true
       })
     ).toBe("nestedProperty");
   });
@@ -57,7 +57,7 @@ describe("Unit test for nameof function", () => {
   });
 
   it("class static property with fieldNameOnly set to true", () => {
-    expect(nameof(() => A.somethingStatic, { fieldNameOnly: true })).toBe(
+    expect(nameof(() => A.somethingStatic, { propertyNameOnly: true })).toBe(
       "somethingStatic"
     );
   });
