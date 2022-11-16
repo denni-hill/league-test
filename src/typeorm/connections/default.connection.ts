@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { DataSource } from "typeorm";
 import { DataBaseConfig } from "../../core/config";
+import { CategoryEntity } from "../entities";
 import { Connection } from "../types";
 
 @Injectable()
@@ -13,8 +14,9 @@ export class DefaultConnection implements Connection {
       database: config.database,
       username: config.user,
       password: config.password,
-      entities: [],
-      synchronize: true
+      entities: [CategoryEntity],
+      synchronize: true,
+      logging: true
     });
   }
 
