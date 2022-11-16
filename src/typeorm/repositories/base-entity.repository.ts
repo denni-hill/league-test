@@ -1,4 +1,4 @@
-import { FindOneOptions, Repository } from "typeorm";
+import { FindManyOptions, FindOneOptions, Repository } from "typeorm";
 import { CustomLoggerService } from "../../core/custom-logger";
 import {
   CreateExecutor,
@@ -10,26 +10,31 @@ import {
   UpdateByIdExecutor,
   UpdateByIdRepository
 } from "../../core/data-access";
+import { NotFoundError } from "../../core/errors";
+import { Validation } from "../../core/validation";
 import {
   TypeormDefaultCreateStrategy,
   TypeormDefaultDeleteByIdStrategy,
-  TypeormDefaultUpdateStrategy
+  TypeormDefaultUpdateByIdStrategy
 } from "../strategies";
 import { BaseEntity, Connection } from "../types";
 
-export abstract class BaseEntityRepository<T extends BaseEntity>
-  implements
+export abstract class TypeormBaseEntityRepository<
+  T extends BaseEntity<TId>,
+  TId = number
+> implements
     CreateRepository<T>,
     FindAllRepository<T>,
-    FindByIdRepository<T, number>,
-    UpdateByIdRepository<T, number>,
-    DeleteByIdRepository<T, number>
+    FindByIdRepository<T, TId>,
+    UpdateByIdRepository<T, TId>,
+    DeleteByIdRepository<T, TId>
 {
   constructor(
-    private readonly _connection: Connection,
-    _alias: string,
-    private readonly _entityClass: { new (): T },
-    _logger: CustomLoggerService
+    protected readonly _connection: Connection,
+    protected readonly _alias: string,
+    protected readonly _entityClass: { new (): T },
+    protected readonly _idValidation: Validation<TId>,
+    protected readonly _logger: CustomLoggerService
   ) {
     this._createExecutor = new CreateExecutor<T>(
       _logger,
@@ -37,42 +42,62 @@ export abstract class BaseEntityRepository<T extends BaseEntity>
       new TypeormDefaultCreateStrategy<T>(this._repository)
     );
 
-    this._updateExecutor = new UpdateByIdExecutor<T>(
+    this._updateExecutor = new UpdateByIdExecutor<T, TId>(
       _logger,
       _alias,
-      new TypeormDefaultUpdateStrategy<T>(this._repository, _alias)
+      new TypeormDefaultUpdateByIdStrategy<T, TId>(
+        this._repository,
+        _alias,
+        _idValidation
+      )
     );
 
-    this._deleteByIdExecutor = new DeleteByIdExecutor<T>(
+    this._deleteByIdExecutor = new DeleteByIdExecutor<T, TId>(
       _logger,
       _alias,
-      new TypeormDefaultDeleteByIdStrategy<T>(this._repository, _alias)
+      new TypeormDefaultDeleteByIdStrategy<T, TId>(
+        this._repository,
+        _alias,
+        _idValidation
+      )
     );
   }
 
   protected _createExecutor: CreateExecutor<T>;
-  protected _updateExecutor: UpdateByIdExecutor<T, number>;
-  protected _deleteByIdExecutor: DeleteByIdExecutor<T, number>;
+  protected _updateExecutor: UpdateByIdExecutor<T, TId>;
+  protected _deleteByIdExecutor: DeleteByIdExecutor<T, TId>;
 
   async create(data: T): Promise<T> {
     return await this._createExecutor.create(data);
   }
 
-  async findById(id: number): Promise<T> {
-    return await this._repository.findOne({
+  async findById(id: TId): Promise<T> {
+    const entity = await this._repository.findOne({
       where: { id }
     } as FindOneOptions<T>);
+
+    if (entity === null) throw new NotFoundError(this._alias);
+
+    return entity;
+  }
+
+  async isExistById(id: TId): Promise<boolean> {
+    return (
+      (await this._repository.count({
+        where: { id }
+      } as FindManyOptions<T>)) > 0
+    );
   }
 
   async findAll(): Promise<T[]> {
     return await this._repository.find();
   }
 
-  async updateById(id: number, data: Partial<T>): Promise<T> {
+  async updateById(id: TId, data: Partial<T>): Promise<T> {
     return await this._updateExecutor.update(id, data);
   }
 
-  async deleteById(id: number): Promise<T> {
+  async deleteById(id: TId): Promise<T> {
     return await this._deleteByIdExecutor.deleteById(id);
   }
 

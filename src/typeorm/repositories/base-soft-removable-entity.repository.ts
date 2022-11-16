@@ -8,46 +8,58 @@ import {
   SoftDeleteByIdExecutor,
   SoftDeleteById
 } from "../../core/data-access";
+import { NotFoundError } from "../../core/errors";
+import { Validation } from "../../core/validation";
 import {
   TypeormDefaultRestoreByIdStrategy,
   TypeormDefaultSoftDeleteByIdStrategy
 } from "../strategies";
 import { BaseSoftRemovableEntity, Connection } from "../types";
-import { BaseEntityRepository } from "./base-entity.repository";
+import { TypeormBaseEntityRepository } from "./base-entity.repository";
 
-export abstract class BaseSoftRemovableEntityRepository<
-    T extends BaseSoftRemovableEntity
+export abstract class TypeormBaseSoftRemovableEntityRepository<
+    T extends BaseSoftRemovableEntity<TId>,
+    TId = number
   >
-  extends BaseEntityRepository<T>
+  extends TypeormBaseEntityRepository<T, TId>
   implements
-    SoftDeleteById<T, number>,
-    RestoreByIdRepository<T, number>,
+    SoftDeleteById<T, TId>,
+    RestoreByIdRepository<T, TId>,
     FindAllDeletedRepository<T>,
-    FindDeletedByIdRepository<T, number>
+    FindDeletedByIdRepository<T, TId>
 {
   constructor(
     _connection: Connection,
     _alias: string,
     _entityClass: { new (): T },
+    _idValidation: Validation<TId>,
     _logger: CustomLoggerService
   ) {
-    super(_connection, _alias, _entityClass, _logger);
+    super(_connection, _alias, _entityClass, _idValidation, _logger);
 
-    this._softDeleteByIdExecutor = new SoftDeleteByIdExecutor<T, number>(
+    this._softDeleteByIdExecutor = new SoftDeleteByIdExecutor<T, TId>(
       _logger,
       _alias,
-      new TypeormDefaultSoftDeleteByIdStrategy<T>(this._repository, _alias)
+      new TypeormDefaultSoftDeleteByIdStrategy<T, TId>(
+        this._repository,
+        _alias,
+        _idValidation
+      )
     );
 
-    this._restoreByIdExecutor = new RestoreByIdExecutor<T, number>(
+    this._restoreByIdExecutor = new RestoreByIdExecutor<T, TId>(
       _logger,
       _alias,
-      new TypeormDefaultRestoreByIdStrategy<T>(this._repository, _alias)
+      new TypeormDefaultRestoreByIdStrategy<T, TId>(
+        this._repository,
+        _alias,
+        _idValidation
+      )
     );
   }
 
-  protected _softDeleteByIdExecutor: SoftDeleteByIdExecutor<T, number>;
-  protected _restoreByIdExecutor: RestoreByIdExecutor<T, number>;
+  protected _softDeleteByIdExecutor: SoftDeleteByIdExecutor<T, TId>;
+  protected _restoreByIdExecutor: RestoreByIdExecutor<T, TId>;
 
   async findAllDeleted(): Promise<T[]> {
     return await this._repository.find({
@@ -56,18 +68,22 @@ export abstract class BaseSoftRemovableEntityRepository<
     } as FindManyOptions<T>);
   }
 
-  async findDeletedById(id: number): Promise<T> {
-    return await this._repository.findOne({
+  async findDeletedById(id: TId): Promise<T> {
+    const entity = await this._repository.findOne({
       where: { id },
       withDeleted: true
     } as FindOneOptions<T>);
+
+    if (entity === null) throw new NotFoundError(this._alias);
+
+    return entity;
   }
 
-  async restoreById(id: number): Promise<T> {
+  async restoreById(id: TId): Promise<T> {
     return await this._restoreByIdExecutor.restoreById(id);
   }
 
-  async softDeleteById(id: number): Promise<T> {
+  async softDeleteById(id: TId): Promise<T> {
     return await this._softDeleteByIdExecutor.softDeleteById(id);
   }
 }
