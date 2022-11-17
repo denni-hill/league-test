@@ -40,10 +40,10 @@ export class TypeormCategoryRepository
       builder.andWhere(
         new Brackets((whereBuilder) => {
           whereBuilder.orWhere("category.name ~* :search", {
-            search: this._handleCyrillicLetterYo(filters.search)
+            search: this._handleCyrillicLetterYo(filters.search as string)
           });
           whereBuilder.orWhere("category.description ~* :search", {
-            search: this._handleCyrillicLetterYo(filters.search)
+            search: this._handleCyrillicLetterYo(filters.search as string)
           });
         })
       );

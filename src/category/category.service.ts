@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ConflictError, NotFoundError, ValidationError } from "../core/errors";
 import {
   Category,
+  CategoryFilters,
   CategoryFiltersRequestDTO,
   CategoryRepository,
   CreateCategoryRequestDTO,
@@ -38,7 +39,7 @@ export class CategoryService {
         CategoryService.dtoValidationFailedErrorMessage
       );
 
-    const validCategoryDTO = dtoValidationResult.value;
+    const validCategoryDTO = dtoValidationResult.value as Category;
 
     if (await this._cateogryRepository.isExistBySlug(validCategoryDTO.slug)) {
       throw new ConflictError(CategoryService.slugConflictErrorMessage);
@@ -59,7 +60,7 @@ export class CategoryService {
         CategoryService.dtoValidationFailedErrorMessage
       );
 
-    const validCategoryDTO = dtoValidationResult.value;
+    const validCategoryDTO = dtoValidationResult.value as Partial<Category>;
 
     if (!(await this._cateogryRepository.isExistById(id)))
       throw new NotFoundError("category");
@@ -69,10 +70,9 @@ export class CategoryService {
         validCategoryDTO.slug
       );
 
-      if (sameSlugCategory.id !== id)
+      if (sameSlugCategory !== null && sameSlugCategory.id !== id)
         throw new ConflictError(CategoryService.slugConflictErrorMessage);
     }
-
     return await this._cateogryRepository.updateById(id, validCategoryDTO);
   }
 
@@ -84,9 +84,15 @@ export class CategoryService {
     const uuidMathPattern =
       /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/;
 
+    let category: Category | null;
+
     if (uuidMathPattern.test(idOrSlug))
-      return await this._cateogryRepository.findById(idOrSlug);
-    else return await this._cateogryRepository.findBySlug(idOrSlug);
+      category = await this._cateogryRepository.findById(idOrSlug);
+    else category = await this._cateogryRepository.findBySlug(idOrSlug);
+
+    if (category === null) throw new NotFoundError("category");
+
+    return category;
   }
 
   async findCategoriesByFilter(
@@ -101,7 +107,7 @@ export class CategoryService {
         CategoryService.filtersValidationFailedErrorMessage
       );
 
-    const validFiltersDTO = filtersValidationResult.value;
+    const validFiltersDTO = filtersValidationResult.value as CategoryFilters;
 
     return await this._cateogryRepository.findByFilters(validFiltersDTO);
   }

@@ -12,6 +12,6 @@ export abstract class ValidationPipe<TInput, TTransformed>
     if (validationResult.error)
       throw new UnprocessableEntityException(validationResult.error);
 
-    return validationResult.value;
+    return validationResult.value as TTransformed;
   }
 }

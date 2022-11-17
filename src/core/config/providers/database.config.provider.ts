@@ -16,27 +16,27 @@ export class DataBaseConfigProvider
 
   private readonly _hostVariable = "DATABASE_HOST";
   get host() {
-    return this._config.get<string>(this._hostVariable);
+    return this._config.get<string>(this._hostVariable) as string;
   }
 
   private readonly _portVariable = "DATABASE_PORT";
   get port() {
-    return this._config.get<number>(this._portVariable);
+    return this._config.get<number>(this._portVariable) as number;
   }
 
   private readonly _databaseVariable = "DATABASE_NAME";
   get database() {
-    return this._config.get<string>(this._databaseVariable);
+    return this._config.get<string>(this._databaseVariable) as string;
   }
 
   private readonly _userVariable = "DATABASE_USER";
   get user() {
-    return this._config.get<string>(this._userVariable);
+    return this._config.get<string>(this._userVariable) as string;
   }
 
   private readonly _passwordVariable = "DATABASE_PASSWORD";
   get password() {
-    return this._config.get<string>(this._passwordVariable);
+    return this._config.get<string>(this._passwordVariable) as string;
   }
 
   protected _validatorFunction() {

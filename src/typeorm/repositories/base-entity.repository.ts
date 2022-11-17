@@ -105,7 +105,10 @@ export abstract class TypeormBaseEntityRepository<
         `id validation failed while updating ${this._alias}`
       );
 
-    return await this._updateExecutor.update(idValidationResult.value, data);
+    return await this._updateExecutor.update(
+      idValidationResult.value as TId,
+      data
+    );
   }
 
   async deleteById(id: TId): Promise<T> {
@@ -116,7 +119,9 @@ export abstract class TypeormBaseEntityRepository<
         `id validation failed while deleting ${this._alias}`
       );
 
-    return await this._deleteByIdExecutor.deleteById(idValidationResult.value);
+    return await this._deleteByIdExecutor.deleteById(
+      idValidationResult.value as TId
+    );
   }
 
   protected get _repository(): Repository<T> {
