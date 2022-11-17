@@ -1,7 +1,6 @@
 import { FindOneOptions, IsNull, Not, Repository } from "typeorm";
 import { RestoreByIdStrategy } from "../../../core/data-access";
-import { NotFoundError, ValidationError } from "../../../core/errors";
-import { Validation } from "../../../core/validation";
+import { NotFoundError } from "../../../core/errors";
 import { BaseSoftRemovableEntity } from "../../types";
 
 export class TypeormDefaultRestoreByIdStrategy<
@@ -11,20 +10,8 @@ export class TypeormDefaultRestoreByIdStrategy<
 {
   constructor(
     private readonly _repository: Repository<T>,
-    private readonly _alias: string,
-    private readonly _idValidation: Validation<TId>
+    private readonly _alias: string
   ) {}
-
-  async beforeRestore(id: TId): Promise<TId | void> {
-    const idValidationResult = await this._idValidation.validate(id);
-    if (idValidationResult.error)
-      throw new ValidationError(
-        idValidationResult.error,
-        `id validation failed while restoring ${this._alias}`
-      );
-
-    return idValidationResult.value;
-  }
   async restoreByIdMethod(id: TId): Promise<T> {
     const entityToRestore = await this._repository.findOne({
       where: { id, deletedAt: Not(IsNull()) },

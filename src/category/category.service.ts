@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common";
 import { ConflictError, NotFoundError, ValidationError } from "../core/errors";
-import { UUIDValidation } from "../typeorm/validations/uuid.validation";
 import {
   Category,
   CategoryFiltersRequestDTO,
@@ -27,8 +26,7 @@ export class CategoryService {
     private readonly _cateogryRepository: CategoryRepository,
     private readonly _createCategoryDTOValidation: CreateCategoryDTOValidation,
     private readonly _updateCategoryDTOValidation: UpdateCategoryDTOValidation,
-    private readonly _categoryFiltersDTOValidation: CategoryFiltersDTOValidation,
-    private readonly _uuidValidation: UUIDValidation
+    private readonly _categoryFiltersDTOValidation: CategoryFiltersDTOValidation
   ) {}
 
   async createCategory(createCategoryDTO: CreateCategoryRequestDTO) {
@@ -83,13 +81,12 @@ export class CategoryService {
   }
 
   async findCategoryByIdOrSlug(idOrSlug: string): Promise<Category> {
-    const uuidValidationResult = await this._uuidValidation.validate(idOrSlug);
-    if (uuidValidationResult.error)
-      return await this._cateogryRepository.findBySlug(idOrSlug);
-    else
-      return await this._cateogryRepository.findById(
-        uuidValidationResult.value
-      );
+    const uuidMathPattern =
+      /^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/;
+
+    if (uuidMathPattern.test(idOrSlug))
+      return await this._cateogryRepository.findById(idOrSlug);
+    else return await this._cateogryRepository.findBySlug(idOrSlug);
   }
 
   async findCategoriesByFilter(

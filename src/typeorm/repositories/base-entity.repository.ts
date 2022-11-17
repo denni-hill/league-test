@@ -10,7 +10,7 @@ import {
   UpdateByIdExecutor,
   UpdateByIdRepository
 } from "../../core/data-access";
-import { NotFoundError } from "../../core/errors";
+import { NotFoundError, ValidationError } from "../../core/errors";
 import { Validation } from "../../core/validation";
 import {
   TypeormDefaultCreateStrategy,
@@ -45,21 +45,13 @@ export abstract class TypeormBaseEntityRepository<
     this._updateExecutor = new UpdateByIdExecutor<T, TId>(
       _logger,
       _alias,
-      new TypeormDefaultUpdateByIdStrategy<T, TId>(
-        this._repository,
-        _alias,
-        _idValidation
-      )
+      new TypeormDefaultUpdateByIdStrategy<T, TId>(this._repository, _alias)
     );
 
     this._deleteByIdExecutor = new DeleteByIdExecutor<T, TId>(
       _logger,
       _alias,
-      new TypeormDefaultDeleteByIdStrategy<T, TId>(
-        this._repository,
-        _alias,
-        _idValidation
-      )
+      new TypeormDefaultDeleteByIdStrategy<T, TId>(this._repository, _alias)
     );
   }
 
@@ -72,6 +64,13 @@ export abstract class TypeormBaseEntityRepository<
   }
 
   async findById(id: TId): Promise<T> {
+    const idValidationResult = await this._idValidation.validate(id);
+    if (idValidationResult.error)
+      throw new ValidationError(
+        idValidationResult.error,
+        `id validation failed while finding ${this._alias}`
+      );
+
     const entity = await this._repository.findOne({
       where: { id }
     } as FindOneOptions<T>);
@@ -82,6 +81,13 @@ export abstract class TypeormBaseEntityRepository<
   }
 
   async isExistById(id: TId): Promise<boolean> {
+    const idValidationResult = await this._idValidation.validate(id);
+    if (idValidationResult.error)
+      throw new ValidationError(
+        idValidationResult.error,
+        `id validation failed while checking ${this._alias} for existence`
+      );
+
     return (
       (await this._repository.count({
         where: { id }
@@ -94,10 +100,24 @@ export abstract class TypeormBaseEntityRepository<
   }
 
   async updateById(id: TId, data: Partial<T>): Promise<T> {
+    const idValidationResult = await this._idValidation.validate(id);
+    if (idValidationResult.error)
+      throw new ValidationError(
+        idValidationResult.error,
+        `id validation failed while updating ${this._alias}`
+      );
+
     return await this._updateExecutor.update(id, data);
   }
 
   async deleteById(id: TId): Promise<T> {
+    const idValidationResult = await this._idValidation.validate(id);
+    if (idValidationResult.error)
+      throw new ValidationError(
+        idValidationResult.error,
+        `id validation failed while deleting ${this._alias}`
+      );
+
     return await this._deleteByIdExecutor.deleteById(id);
   }
 

@@ -1,7 +1,6 @@
 import { FindOneOptions, Repository } from "typeorm";
 import { DeleteByIdStrategy } from "../../../core/data-access";
-import { NotFoundError, ValidationError } from "../../../core/errors";
-import { Validation } from "../../../core/validation";
+import { NotFoundError } from "../../../core/errors";
 import { BaseEntity } from "../../types";
 
 export class TypeormDefaultDeleteByIdStrategy<
@@ -11,20 +10,8 @@ export class TypeormDefaultDeleteByIdStrategy<
 {
   constructor(
     private readonly _repository: Repository<T>,
-    private readonly _alias: string,
-    private readonly _idValidation: Validation<TId>
+    private readonly _alias: string
   ) {}
-
-  async beforeDelete(id: TId): Promise<TId | void> {
-    const idValidationResult = await this._idValidation.validate(id);
-    if (idValidationResult.error)
-      throw new ValidationError(
-        idValidationResult.error,
-        `id validation failed while deleting ${this._alias}`
-      );
-
-    return idValidationResult.value;
-  }
 
   async deleteByIdMethod(id: TId): Promise<T> {
     const entityToDelete = await this._repository.findOne({

@@ -1,7 +1,6 @@
 import { FindOneOptions, Repository } from "typeorm";
 import { SoftDeleteByIdStrategy } from "../../../core/data-access";
-import { NotFoundError, ValidationError } from "../../../core/errors";
-import { Validation } from "../../../core/validation";
+import { NotFoundError } from "../../../core/errors";
 import { BaseSoftRemovableEntity } from "../../types";
 
 export class TypeormDefaultSoftDeleteByIdStrategy<
@@ -11,20 +10,8 @@ export class TypeormDefaultSoftDeleteByIdStrategy<
 {
   constructor(
     private readonly _repository: Repository<T>,
-    private readonly _alias: string,
-    private readonly _idValidation: Validation<TId>
+    private readonly _alias: string
   ) {}
-
-  async beforeSoftDelete(id: TId): Promise<TId | void> {
-    const idValidationResult = await this._idValidation.validate(id);
-    if (idValidationResult.error)
-      throw new ValidationError(
-        idValidationResult.error,
-        `id validation failed while soft deleting ${this._alias}`
-      );
-
-    return idValidationResult.value;
-  }
 
   async softDeleteByIdMethod(id: TId): Promise<T> {
     const entityToSoftDelete = await this._repository.findOne({

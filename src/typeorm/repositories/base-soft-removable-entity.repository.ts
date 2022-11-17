@@ -8,7 +8,7 @@ import {
   SoftDeleteByIdExecutor,
   SoftDeleteById
 } from "../../core/data-access";
-import { NotFoundError } from "../../core/errors";
+import { NotFoundError, ValidationError } from "../../core/errors";
 import { Validation } from "../../core/validation";
 import {
   TypeormDefaultRestoreByIdStrategy,
@@ -40,21 +40,13 @@ export abstract class TypeormBaseSoftRemovableEntityRepository<
     this._softDeleteByIdExecutor = new SoftDeleteByIdExecutor<T, TId>(
       _logger,
       _alias,
-      new TypeormDefaultSoftDeleteByIdStrategy<T, TId>(
-        this._repository,
-        _alias,
-        _idValidation
-      )
+      new TypeormDefaultSoftDeleteByIdStrategy<T, TId>(this._repository, _alias)
     );
 
     this._restoreByIdExecutor = new RestoreByIdExecutor<T, TId>(
       _logger,
       _alias,
-      new TypeormDefaultRestoreByIdStrategy<T, TId>(
-        this._repository,
-        _alias,
-        _idValidation
-      )
+      new TypeormDefaultRestoreByIdStrategy<T, TId>(this._repository, _alias)
     );
   }
 
@@ -69,6 +61,13 @@ export abstract class TypeormBaseSoftRemovableEntityRepository<
   }
 
   async findDeletedById(id: TId): Promise<T> {
+    const idValidationResult = await this._idValidation.validate(id);
+    if (idValidationResult.error)
+      throw new ValidationError(
+        idValidationResult.error,
+        `id validation failed while finding deleted ${this._alias}`
+      );
+
     const entity = await this._repository.findOne({
       where: { id },
       withDeleted: true
@@ -80,10 +79,24 @@ export abstract class TypeormBaseSoftRemovableEntityRepository<
   }
 
   async restoreById(id: TId): Promise<T> {
+    const idValidationResult = await this._idValidation.validate(id);
+    if (idValidationResult.error)
+      throw new ValidationError(
+        idValidationResult.error,
+        `id validation failed while restoring ${this._alias}`
+      );
+
     return await this._restoreByIdExecutor.restoreById(id);
   }
 
   async softDeleteById(id: TId): Promise<T> {
+    const idValidationResult = await this._idValidation.validate(id);
+    if (idValidationResult.error)
+      throw new ValidationError(
+        idValidationResult.error,
+        `id validation failed while soft deleting ${this._alias}`
+      );
+
     return await this._softDeleteByIdExecutor.softDeleteById(id);
   }
 }
