@@ -8,7 +8,7 @@ import {
   SoftDeleteByIdExecutor,
   SoftDeleteById
 } from "../../core/data-access";
-import { NotFoundError, ValidationError } from "../../core/errors";
+import { BadRequestError, NotFoundError } from "../../core/errors";
 import { Validation } from "../../core/validation";
 import {
   TypeormDefaultRestoreByIdStrategy,
@@ -63,7 +63,7 @@ export abstract class TypeormBaseSoftRemovableEntityRepository<
   async findDeletedById(id: TId): Promise<T> {
     const idValidationResult = await this._idValidation.validate(id);
     if (idValidationResult.error)
-      throw new ValidationError(
+      throw new BadRequestError(
         idValidationResult.error,
         `id validation failed while finding deleted ${this._alias}`
       );
@@ -81,7 +81,7 @@ export abstract class TypeormBaseSoftRemovableEntityRepository<
   async restoreById(id: TId): Promise<T> {
     const idValidationResult = await this._idValidation.validate(id);
     if (idValidationResult.error)
-      throw new ValidationError(
+      throw new BadRequestError(
         idValidationResult.error,
         `id validation failed while restoring ${this._alias}`
       );
@@ -92,7 +92,7 @@ export abstract class TypeormBaseSoftRemovableEntityRepository<
   async softDeleteById(id: TId): Promise<T> {
     const idValidationResult = await this._idValidation.validate(id);
     if (idValidationResult.error)
-      throw new ValidationError(
+      throw new BadRequestError(
         idValidationResult.error,
         `id validation failed while soft deleting ${this._alias}`
       );

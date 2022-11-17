@@ -10,7 +10,7 @@ import {
   UpdateByIdExecutor,
   UpdateByIdRepository
 } from "../../core/data-access";
-import { NotFoundError, ValidationError } from "../../core/errors";
+import { BadRequestError, NotFoundError } from "../../core/errors";
 import { Validation } from "../../core/validation";
 import {
   TypeormDefaultCreateStrategy,
@@ -66,7 +66,7 @@ export abstract class TypeormBaseEntityRepository<
   async findById(id: TId): Promise<T> {
     const idValidationResult = await this._idValidation.validate(id);
     if (idValidationResult.error)
-      throw new ValidationError(
+      throw new BadRequestError(
         idValidationResult.error,
         `id validation failed while finding ${this._alias}`
       );
@@ -83,7 +83,7 @@ export abstract class TypeormBaseEntityRepository<
   async isExistById(id: TId): Promise<boolean> {
     const idValidationResult = await this._idValidation.validate(id);
     if (idValidationResult.error)
-      throw new ValidationError(
+      throw new BadRequestError(
         idValidationResult.error,
         `id validation failed while checking ${this._alias} for existence`
       );
@@ -102,7 +102,7 @@ export abstract class TypeormBaseEntityRepository<
   async updateById(id: TId, data: Partial<T>): Promise<T> {
     const idValidationResult = await this._idValidation.validate(id);
     if (idValidationResult.error)
-      throw new ValidationError(
+      throw new BadRequestError(
         idValidationResult.error,
         `id validation failed while updating ${this._alias}`
       );
@@ -113,7 +113,7 @@ export abstract class TypeormBaseEntityRepository<
   async deleteById(id: TId): Promise<T> {
     const idValidationResult = await this._idValidation.validate(id);
     if (idValidationResult.error)
-      throw new ValidationError(
+      throw new BadRequestError(
         idValidationResult.error,
         `id validation failed while deleting ${this._alias}`
       );
