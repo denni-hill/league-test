@@ -1,5 +1,6 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ConflictException,
   HttpException,
@@ -16,6 +17,7 @@ import {
   NotFoundError,
   ValidationError
 } from "../../errors";
+import { BadRequestError } from "../../errors/bad-request.error";
 
 @Catch()
 @Injectable()
@@ -35,6 +37,11 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
         exception = new NotFoundException(exception.message);
       else if (exception instanceof ValidationError)
         exception = new UnprocessableEntityException({
+          message: exception.message,
+          error: exception.cause
+        });
+      else if (exception instanceof BadRequestError)
+        exception = new BadRequestException({
           message: exception.message,
           error: exception.cause
         });
