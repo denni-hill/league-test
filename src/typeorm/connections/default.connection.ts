@@ -15,13 +15,16 @@ export class DefaultConnection implements Connection {
       username: config.user,
       password: config.password,
       entities: [CategoryEntity],
-      synchronize: true,
-      logging: true
+      synchronize: true
     });
   }
 
   private readonly _dataSource: DataSource;
   public get dataSource() {
     return this._dataSource;
+  }
+
+  onApplicationShutdown(): void {
+    this._dataSource.destroy();
   }
 }
