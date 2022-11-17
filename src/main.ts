@@ -7,7 +7,6 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { ApplicationConfig } from "./core/config";
 import { CustomLoggerService } from "./core/custom-logger";
-import { AllExceptionsFilter } from "./core/exceptions";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -17,7 +16,6 @@ async function bootstrap() {
   );
   const logger = app.get(CustomLoggerService);
   app.useLogger(logger);
-  app.useGlobalFilters(app.get(AllExceptionsFilter));
 
   const applicationConfig = app.get(ApplicationConfig);
 
