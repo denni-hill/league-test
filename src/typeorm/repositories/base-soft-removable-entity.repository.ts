@@ -8,7 +8,7 @@ import {
   SoftDeleteByIdExecutor,
   SoftDeleteById
 } from "../../core/data-access";
-import { BadRequestError, NotFoundError } from "../../core/errors";
+import { BadRequestError } from "../../core/errors";
 import { Validation } from "../../core/validation";
 import {
   TypeormDefaultRestoreByIdStrategy,
@@ -60,7 +60,7 @@ export abstract class TypeormBaseSoftRemovableEntityRepository<
     } as FindManyOptions<T>);
   }
 
-  async findDeletedById(id: TId): Promise<T> {
+  async findDeletedById(id: TId): Promise<T | null> {
     const idValidationResult = await this._idValidation.validate(id);
     if (idValidationResult.error)
       throw new BadRequestError(
@@ -73,9 +73,23 @@ export abstract class TypeormBaseSoftRemovableEntityRepository<
       withDeleted: true
     } as FindOneOptions<T>);
 
-    if (entity === null) throw new NotFoundError(this._alias);
-
     return entity;
+  }
+
+  async isDeletedExistById(id: TId): Promise<boolean> {
+    const idValidationResult = await this._idValidation.validate(id);
+    if (idValidationResult.error)
+      throw new BadRequestError(
+        idValidationResult.error,
+        `id validation failed while checking deleted ${this._alias} for existence`
+      );
+
+    return (
+      (await this._repository.count({
+        where: { id: idValidationResult.value, deletedAt: Not(IsNull()) },
+        withDeleted: true
+      } as FindManyOptions<T>)) > 0
+    );
   }
 
   async restoreById(id: TId): Promise<T> {

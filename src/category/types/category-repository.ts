@@ -15,14 +15,14 @@ export abstract class CategoryRepository
     DeleteByIdRepository<Category, string>
 {
   abstract create(data: Category): Category | Promise<Category>;
-  abstract findById(id: string): Category | Promise<Category>;
   abstract updateById(
     id: string,
     data: Partial<Category>
   ): Category | Promise<Category>;
   abstract deleteById(id: string): Category | Promise<Category>;
 
-  abstract findBySlug(slug: string): Category | Promise<Category>;
+  abstract findById(id: string): Category | null | Promise<Category | null>;
+  abstract findBySlug(slug: string): Category | null | Promise<Category | null>;
   abstract findByFilters(
     filters: CategoryFilters
   ): Category[] | Promise<Category[]>;

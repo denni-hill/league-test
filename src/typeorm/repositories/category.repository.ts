@@ -6,7 +6,6 @@ import {
   CategoryRepository
 } from "../../category/types";
 import { CustomLoggerService } from "../../core/custom-logger";
-import { NotFoundError } from "../../core/errors";
 import { CategoryEntity } from "../entities";
 import { Connection } from "../types";
 import { UUIDValidation } from "../validations/uuid.validation";
@@ -24,14 +23,12 @@ export class TypeormCategoryRepository
   ) {
     super(connection, "category", CategoryEntity, idValidation, logger);
   }
-  async findBySlug(slug: string): Promise<Category> {
+  async findBySlug(slug: string): Promise<Category | null> {
     const category = await this._repository.findOne({
       where: {
         slug
       }
     });
-
-    if (category === null) throw new NotFoundError(this._alias);
 
     return category;
   }

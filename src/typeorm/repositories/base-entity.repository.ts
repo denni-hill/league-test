@@ -10,7 +10,7 @@ import {
   UpdateByIdExecutor,
   UpdateByIdRepository
 } from "../../core/data-access";
-import { BadRequestError, NotFoundError } from "../../core/errors";
+import { BadRequestError } from "../../core/errors";
 import { Validation } from "../../core/validation";
 import {
   TypeormDefaultCreateStrategy,
@@ -63,7 +63,7 @@ export abstract class TypeormBaseEntityRepository<
     return await this._createExecutor.create(data);
   }
 
-  async findById(id: TId): Promise<T> {
+  async findById(id: TId): Promise<T | null> {
     const idValidationResult = await this._idValidation.validate(id);
     if (idValidationResult.error)
       throw new BadRequestError(
@@ -72,10 +72,8 @@ export abstract class TypeormBaseEntityRepository<
       );
 
     const entity = await this._repository.findOne({
-      where: { id }
+      where: { id: idValidationResult.value }
     } as FindOneOptions<T>);
-
-    if (entity === null) throw new NotFoundError(this._alias);
 
     return entity;
   }
@@ -90,7 +88,7 @@ export abstract class TypeormBaseEntityRepository<
 
     return (
       (await this._repository.count({
-        where: { id }
+        where: { id: idValidationResult.value }
       } as FindManyOptions<T>)) > 0
     );
   }
@@ -107,7 +105,7 @@ export abstract class TypeormBaseEntityRepository<
         `id validation failed while updating ${this._alias}`
       );
 
-    return await this._updateExecutor.update(id, data);
+    return await this._updateExecutor.update(idValidationResult.value, data);
   }
 
   async deleteById(id: TId): Promise<T> {
@@ -118,7 +116,7 @@ export abstract class TypeormBaseEntityRepository<
         `id validation failed while deleting ${this._alias}`
       );
 
-    return await this._deleteByIdExecutor.deleteById(id);
+    return await this._deleteByIdExecutor.deleteById(idValidationResult.value);
   }
 
   protected get _repository(): Repository<T> {
