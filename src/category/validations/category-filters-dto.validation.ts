@@ -51,7 +51,15 @@ export class CategoryFiltersDTOValidation
           };
       })
   });
-  private _acceptableSortValues: string[];
+
+  private _acceptableSortValues = [
+    nameof((c: Category) => c.id),
+    nameof((c: Category) => c.slug),
+    nameof((c: Category) => c.name),
+    nameof((c: Category) => c.description),
+    nameof((c: Category) => c.createdDate),
+    nameof((c: Category) => c.active)
+  ];
 
   validate(
     input: CategoryFiltersRequestDTO
@@ -71,20 +79,5 @@ export class CategoryFiltersDTOValidation
       validationResult.value.sort = undefined;
 
     return validationResult;
-  }
-
-  constructor() {
-    this._initAcceptableSortValues();
-  }
-
-  private _initAcceptableSortValues(): void {
-    this._acceptableSortValues = [
-      nameof((c: Category) => c.id),
-      nameof((c: Category) => c.slug),
-      nameof((c: Category) => c.name),
-      nameof((c: Category) => c.description),
-      nameof((c: Category) => c.createdDate),
-      nameof((c: Category) => c.active)
-    ];
   }
 }
