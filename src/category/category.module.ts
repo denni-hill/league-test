@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
-import { TypeormModule } from "src/typeorm";
+import { TypeormModule } from "../typeorm";
+import { CategoryController } from "./category.controller";
 import { CategoryService } from "./category.service";
 import {
   CategoryFiltersDTOValidation,
   CreateCategoryDTOValidation,
   UpdateCategoryDTOValidation
 } from "./validations";
-import { CategoryController } from './category.controller';
 
 @Module({
   imports: [TypeormModule],
