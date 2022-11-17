@@ -5,14 +5,52 @@ import {
   CategoryFilters,
   CategoryFiltersRequestDTO,
   Category,
-  Sort,
-  SortDirection
+  SortDirection,
+  Sort
 } from "../types";
 
 export class CategoryFiltersDTOValidation
   implements Validation<CategoryFilters>
 {
-  private _validationSchema: Joi.ObjectSchema<CategoryFilters>;
+  private _validationSchema = Joi.object<
+    CategoryFilters,
+    true,
+    CategoryFiltersRequestDTO
+  >({
+    name: Joi.string().trim().min(1).optional(),
+    description: Joi.string().trim().min(1).optional(),
+    active: Joi.string()
+      .valid("0", "false", "1", "true")
+      .custom((active: string) => {
+        if (active === "0" || active === "false") return false;
+        else return true;
+      })
+      .optional(),
+    search: Joi.string().trim().min(1).optional(),
+    pageSize: Joi.number().integer().min(1).default(2),
+    page: Joi.number()
+      .integer()
+      .min(0)
+      .default(1)
+      .custom((page) => {
+        if (page === 0) return 1;
+        else return page;
+      }),
+    sort: Joi.string()
+      .trim()
+      .custom((sortValue: string): Sort => {
+        if (sortValue.startsWith("-"))
+          return {
+            direction: SortDirection.DESC,
+            fieldName: sortValue.slice(1)
+          };
+        else
+          return {
+            direction: SortDirection.ASC,
+            fieldName: sortValue
+          };
+      })
+  });
   private _acceptableSortValues: string[];
 
   validate(
@@ -37,7 +75,6 @@ export class CategoryFiltersDTOValidation
 
   constructor() {
     this._initAcceptableSortValues();
-    this._initValidationSchema();
   }
 
   private _initAcceptableSortValues(): void {
@@ -49,47 +86,5 @@ export class CategoryFiltersDTOValidation
       nameof((c: Category) => c.createdDate),
       nameof((c: Category) => c.active)
     ];
-  }
-
-  private _initValidationSchema() {
-    this._validationSchema = Joi.object<
-      CategoryFilters,
-      true,
-      CategoryFiltersRequestDTO
-    >({
-      name: Joi.string().trim().min(1).optional(),
-      description: Joi.string().trim().min(1).optional(),
-      active: Joi.string()
-        .valid("0", "false", "1", "true")
-        .custom((active: string) => {
-          if (active === "0" || active === "false") return false;
-          else return true;
-        })
-        .optional(),
-      search: Joi.string().trim().min(1).optional(),
-      pageSize: Joi.number().integer().min(1).default(2),
-      page: Joi.number()
-        .integer()
-        .min(0)
-        .default(1)
-        .custom((page) => {
-          if (page === 0) return 1;
-          else return page;
-        }),
-      sort: Joi.string()
-        .trim()
-        .custom((sortValue: string): Sort => {
-          if (sortValue.startsWith("-"))
-            return {
-              direction: SortDirection.DESC,
-              fieldName: sortValue.slice(1)
-            };
-          else
-            return {
-              direction: SortDirection.ASC,
-              fieldName: sortValue
-            };
-        })
-    });
   }
 }
