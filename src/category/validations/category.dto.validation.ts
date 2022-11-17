@@ -13,7 +13,7 @@ const categoryDTOValidationSchema = Joi.object<
   name: Joi.string().trim().min(1).optional(),
   description: Joi.string().trim().min(1).optional(),
   active: Joi.boolean().optional()
-});
+}).required();
 
 export class CreateCategoryDTOValidation implements Validation<Category> {
   private readonly _validationSchema = categoryDTOValidationSchema.fork(
