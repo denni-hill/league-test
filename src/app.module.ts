@@ -3,7 +3,7 @@ import { ExceptionsModule } from "./core/exceptions/exceptions.module";
 import { TypeormModule } from "./typeorm/typeorm.module";
 import { CustomConfigModule } from "./core/config";
 import { CustomLoggerModule } from "./core/custom-logger";
-import { CategoryModule } from './category/category.module';
+import { CategoryModule } from "./category/category.module";
 
 @Module({
   imports: [
