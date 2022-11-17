@@ -65,5 +65,10 @@ export const filters: CategoryFiltersRequestDTO[] = [
     pageSize: 2,
     page: 2,
     sort: "createdDate"
+  },
+  {
+    description: "  ",
+    name: "   ",
+    sort: "   "
   }
 ];

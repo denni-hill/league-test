@@ -26,8 +26,22 @@ export class CategoryFiltersDTOValidation
     true,
     CategoryFiltersRequestDTO
   >({
-    name: Joi.string().trim().min(1).optional(),
-    description: Joi.string().trim().min(1).optional(),
+    name: Joi.string()
+      .trim()
+      .min(0)
+      .custom((name: string): string | undefined => {
+        if (name.length === 0) return undefined;
+        else return name;
+      })
+      .optional(),
+    description: Joi.string()
+      .trim()
+      .min(0)
+      .custom((description: string): string | undefined => {
+        if (description.length === 0) return undefined;
+        else return description;
+      })
+      .optional(),
     active: Joi.string()
       .valid("0", "false", "1", "true")
       .custom((active: string): boolean => {
@@ -35,19 +49,29 @@ export class CategoryFiltersDTOValidation
         else return true;
       })
       .optional(),
-    search: Joi.string().trim().min(1).optional(),
+    search: Joi.string()
+      .trim()
+      .min(0)
+      .custom((search: string): string | undefined => {
+        if (search.length === 0) return undefined;
+        else return search;
+      })
+      .optional(),
     pageSize: Joi.number().integer().min(1).default(2),
     page: Joi.number()
       .integer()
       .min(0)
       .default(1)
-      .custom((page): number => {
+      .custom((page: number): number => {
         if (page === 0) return 1;
         else return page;
       }),
     sort: Joi.string()
       .trim()
+      .min(0)
       .custom((sortValue: string): Sort | undefined => {
+        if (sortValue.length === 0) return undefined;
+
         let direction: SortDirection;
         if (sortValue.startsWith("-")) {
           direction = SortDirection.DESC;

@@ -240,6 +240,22 @@ describe("App e2e", () => {
     ]);
   });
 
+  it("get categories with empty filters", async () => {
+    const response = await request(app.getHttpServer())
+      .get("/categories")
+      .query(filters[7]);
+
+    console.dir(response.body, { depth: null });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toBeInstanceOf(Array);
+
+    expect(response.body).toMatchObject([
+      createdCategories[3],
+      createdCategories[2]
+    ]);
+  });
+
   it("delete created categories", async () => {
     for (let i = 0; i < createdCategories.length; i++) {
       const categoryToDelete = createdCategories[i];
@@ -250,6 +266,7 @@ describe("App e2e", () => {
       const response = await request(app.getHttpServer()).delete(
         `/categories/${categoryToDelete.id}`
       );
+
       expect(response.statusCode).toBe(200);
       expect(response.body).toMatchObject(expectedResponseBody);
     }
