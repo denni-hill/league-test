@@ -12,6 +12,15 @@ import {
 export class CategoryFiltersDTOValidation
   implements Validation<CategoryFilters>
 {
+  private _acceptableSortValues = [
+    nameof((c: Category) => c.id, { propertyNameOnly: true }),
+    nameof((c: Category) => c.slug, { propertyNameOnly: true }),
+    nameof((c: Category) => c.name, { propertyNameOnly: true }),
+    nameof((c: Category) => c.description, { propertyNameOnly: true }),
+    nameof((c: Category) => c.createdDate, { propertyNameOnly: true }),
+    nameof((c: Category) => c.active, { propertyNameOnly: true })
+  ];
+
   private _validationSchema = Joi.object<
     CategoryFilters,
     true,
@@ -21,7 +30,7 @@ export class CategoryFiltersDTOValidation
     description: Joi.string().trim().min(1).optional(),
     active: Joi.string()
       .valid("0", "false", "1", "true")
-      .custom((active: string) => {
+      .custom((active: string): boolean => {
         if (active === "0" || active === "false") return false;
         else return true;
       })
@@ -32,34 +41,28 @@ export class CategoryFiltersDTOValidation
       .integer()
       .min(0)
       .default(1)
-      .custom((page) => {
+      .custom((page): number => {
         if (page === 0) return 1;
         else return page;
       }),
     sort: Joi.string()
       .trim()
-      .custom((sortValue: string): Sort => {
-        if (sortValue.startsWith("-"))
+      .custom((sortValue: string): Sort | undefined => {
+        let direction: SortDirection;
+        if (sortValue.startsWith("-")) {
+          direction = SortDirection.DESC;
+          sortValue = sortValue.slice(1);
+        } else direction = SortDirection.ASC;
+
+        if (this._acceptableSortValues.includes(sortValue))
           return {
-            direction: SortDirection.DESC,
-            fieldName: sortValue.slice(1)
+            direction,
+            fieldName: sortValue as keyof Category
           };
-        else
-          return {
-            direction: SortDirection.ASC,
-            fieldName: sortValue
-          };
+
+        return undefined;
       })
   });
-
-  private _acceptableSortValues = [
-    nameof((c: Category) => c.id),
-    nameof((c: Category) => c.slug),
-    nameof((c: Category) => c.name),
-    nameof((c: Category) => c.description),
-    nameof((c: Category) => c.createdDate),
-    nameof((c: Category) => c.active)
-  ];
 
   validate(
     input: CategoryFiltersRequestDTO
@@ -68,15 +71,6 @@ export class CategoryFiltersDTOValidation
       stripUnknown: true,
       abortEarly: false
     });
-
-    if (
-      validationResult.error === undefined &&
-      validationResult.value.sort !== undefined &&
-      !this._acceptableSortValues.includes(
-        validationResult.value.sort.fieldName
-      )
-    )
-      validationResult.value.sort = undefined;
 
     return validationResult;
   }

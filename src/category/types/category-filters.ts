@@ -1,10 +1,12 @@
+import { Category } from "./category";
+
 export enum SortDirection {
   ASC = "ASC",
   DESC = "DESC"
 }
 
 export interface Sort {
-  fieldName: string;
+  fieldName: keyof Category;
   direction: SortDirection;
 }
 

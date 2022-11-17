@@ -71,7 +71,10 @@ export class TypeormCategoryRepository
     builder.offset(pageSize * (page - 1));
 
     if (filters.sort !== undefined)
-      builder.orderBy(filters.sort.fieldName, filters.sort.direction);
+      builder.orderBy(
+        `category.${filters.sort.fieldName}`,
+        filters.sort.direction
+      );
     else builder.orderBy("category.createdDate", "DESC");
 
     return await builder.getMany();
