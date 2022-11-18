@@ -44,6 +44,18 @@ describe("App e2e", () => {
     }
   });
 
+  it("fail to create categories with wrong data", async () => {
+    for (let i = 4; i < createCategoriesData.length; i++) {
+      const categoryData = createCategoriesData[i];
+
+      const response = await request(app.getHttpServer())
+        .post("/categories")
+        .send(categoryData);
+
+      expect(response.statusCode).toBe(422);
+    }
+  });
+
   it("fail to create category with existing slug", async () => {
     const categoryData = createCategoriesData[0];
 

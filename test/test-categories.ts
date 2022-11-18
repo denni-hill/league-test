@@ -28,6 +28,37 @@ export const createCategoriesData: CreateCategoryRequestDTO[] = [
     description: "Чтобы отвлекаться",
     slug: "add",
     active: false
+  },
+  //incorrect input data
+  {
+    name: "Отвлечённая категория",
+    description: "Чтобы отвлекаться",
+    slug: "slug123",
+    active: false
+  },
+  {
+    name: "Отвлечённая категория",
+    description: "Чтобы отвлекаться",
+    slug: "русский",
+    active: false
+  },
+  {
+    name: "Отвлечённая категория",
+    description: "Чтобы отвлекаться",
+    slug: "with space",
+    active: false
+  },
+  {
+    name: "Цифры123",
+    description: "Чтобы отвлекаться",
+    slug: "another",
+    active: false
+  },
+  {
+    name: "Отвлечённая категория",
+    description: "Цифры123",
+    slug: "another",
+    active: false
   }
 ];
 
