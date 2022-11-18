@@ -9,16 +9,20 @@ const categoryDTOValidationSchema = Joi.object<
   true,
   CreateCategoryRequestDTO | UpdateCategoryRequestDTO
 >({
-  slug: Joi.string().trim().min(1).regex(/[A-z]/).optional(),
+  slug: Joi.string()
+    .trim()
+    .min(1)
+    .regex(/^[A-z]+$/)
+    .optional(),
   name: Joi.string()
     .trim()
     .min(1)
-    .regex(/[А-яA-z]/)
+    .regex(/^[А-яA-zё ]+$/)
     .optional(),
   description: Joi.string()
     .trim()
     .min(1)
-    .regex(/[А-яA-z]/)
+    .regex(/^[А-яA-zё ]+$/)
     .optional(),
   active: Joi.boolean().optional()
 }).required();
