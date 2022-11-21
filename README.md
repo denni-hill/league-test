@@ -6,7 +6,7 @@ CRUD REST API category editor
 
 To start editing project locally clone this repository and run inside project folder
 ```bash
-npm run install
+npm install
 ```
 
 To run tests
