@@ -9,6 +9,8 @@ To start editing project locally clone this repository and run inside project fo
 npm install
 ```
 
+Copy example.env file and rename it to .env, then set correct environment variables for application
+
 To run tests
 ```bash
 npm run test:e2e
